@@ -93,58 +93,71 @@ with tabs[0]:
             .reindex(PRODUCT_ORDER)
             .reset_index()
         )
+        rev_by_product = rev_by_product.sort_values("Revenue", ascending=True)
         fig = px.bar(
             rev_by_product,
-            x="Item Purchased",
-            y="Revenue",
+            y="Item Purchased",
+            x="Revenue",
             color="Item Purchased",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Revenue by Product",
-            text_auto="$.2s",
+            orientation="h",
+            text=rev_by_product["Revenue"].apply(lambda v: f"${v:,.0f}"),
         )
-        fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Revenue (AUD)")
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(textposition="outside", textfont_size=12)
+        dark_layout(fig, "Revenue by Product", "Sorted by total revenue, highest at top")
+        fig.update_layout(showlegend=False, yaxis_title="", xaxis_title="Revenue (AUD)")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
+        mean_rating = df["Review Rating"].mean()
         fig = px.histogram(
             df,
             x="Review Rating",
-            nbins=24,
+            nbins=15,
             color_discrete_sequence=[COLORS["primary"]],
-            template=PLOTLY_TEMPLATE,
-            title="Rating Distribution",
+            histnorm="percent",
         )
-        fig.update_layout(xaxis_title="Review Rating", yaxis_title="Count")
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(marker_line_width=0.5, marker_line_color="rgba(0,0,0,0.3)")
+        add_mean_line(fig, df["Review Rating"], axis="x", name="Avg", color=COLORS["accent"])
+        dark_layout(fig, "Ratings are evenly spread (2.5 - 5.0)", f"Average rating: {mean_rating:.2f} — no strong skew")
+        fig.update_layout(xaxis_title="Review Rating", yaxis_title="% of Orders")
+        st.plotly_chart(fig, use_container_width=True)
 
     col3, col4 = st.columns(2)
 
     with col3:
         gender_counts = df["Gender"].value_counts().reset_index()
         gender_counts.columns = ["Gender", "Count"]
+        gender_counts["Pct"] = (gender_counts["Count"] / gender_counts["Count"].sum() * 100).round(1)
         fig = px.pie(
             gender_counts,
             values="Count",
             names="Gender",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Gender Split",
-            hole=0.4,
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
+            hole=0.45,
         )
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(
+            textinfo="label+percent",
+            textfont_size=14,
+            marker=dict(line=dict(color="rgba(0,0,0,0.3)", width=1)),
+        )
+        dark_layout(fig, "Gender Split")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col4:
+        mean_age = df["Age"].mean()
         fig = px.histogram(
             df,
             x="Age",
-            nbins=30,
+            nbins=20,
             color_discrete_sequence=[COLORS["secondary"]],
-            template=PLOTLY_TEMPLATE,
-            title="Age Distribution",
+            histnorm="percent",
         )
-        fig.update_layout(xaxis_title="Age", yaxis_title="Count")
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(marker_line_width=0.5, marker_line_color="rgba(0,0,0,0.3)")
+        add_mean_line(fig, df["Age"], axis="x", name="Avg Age", color=COLORS["accent"])
+        dark_layout(fig, "Age is uniformly distributed (18-75)", f"Average age: {mean_age:.0f} — all age groups buy equally")
+        fig.update_layout(xaxis_title="Age", yaxis_title="% of Orders")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
