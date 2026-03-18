@@ -665,11 +665,15 @@ with tabs[5]:
             values="Count",
             names="Payment Method",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Payment Method Distribution",
-            hole=0.35,
+            hole=0.45,
         )
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(
+            textinfo="label+percent",
+            textfont_size=11,
+            marker=dict(line=dict(color="rgba(0,0,0,0.3)", width=1)),
+        )
+        dark_layout(fig, "Payment Method Distribution")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         pay_age = (
@@ -684,11 +688,11 @@ with tabs[5]:
             color="Payment Method",
             barmode="stack",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Payment Method by Age Group",
             category_orders={"Age Group": AGE_LABELS},
         )
-        st.plotly_chart(fig, width="stretch")
+        dark_layout(fig, "Payment Method by Age Group", "Stacked — each color is a payment method")
+        fig.update_layout(xaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
 
     col3, col4 = st.columns(2)
 
@@ -702,40 +706,42 @@ with tabs[5]:
             y="Count",
             color="Gender",
             barmode="group",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Payment Method by Gender",
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
         )
+        dark_layout(fig, "Payment Method by Gender")
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col4:
+        mean_prev = df["Previous Purchases"].mean()
         fig = px.histogram(
             df,
             x="Previous Purchases",
-            nbins=25,
+            nbins=20,
             color_discrete_sequence=[COLORS["success"]],
-            template=PLOTLY_TEMPLATE,
-            title="Purchase History Distribution",
+            histnorm="percent",
         )
-        fig.update_layout(xaxis_title="Previous Purchases", yaxis_title="Count")
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(marker_line_width=0.5, marker_line_color="rgba(0,0,0,0.3)")
+        add_mean_line(fig, df["Previous Purchases"], axis="x", name="Avg", color=COLORS["accent"])
+        dark_layout(fig, "Purchase History Distribution", f"Average: {mean_prev:.0f} previous purchases")
+        fig.update_layout(xaxis_title="Previous Purchases", yaxis_title="% of Orders")
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Loyalty vs Satisfaction")
     fig = px.scatter(
         df,
         x="Previous Purchases",
         y="Review Rating",
         color="Item Purchased",
-        opacity=0.4,
+        opacity=0.3,
         color_discrete_sequence=PLOTLY_COLORS,
-        template=PLOTLY_TEMPLATE,
-        title="Previous Purchases vs Review Rating",
         category_orders={"Item Purchased": PRODUCT_ORDER},
         trendline="lowess",
     )
+    fig.update_traces(marker=dict(size=4, line=dict(width=0)), selector=dict(mode="markers"))
+    dark_layout(fig, "Loyalty vs Satisfaction",
+                "LOWESS trend lines show whether repeat buyers rate differently")
     fig.update_layout(legend_title="Product")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Loyalty Tier Profiles")
     loyalty_profiles = (
@@ -755,9 +761,8 @@ with tabs[5]:
     ]
     loyalty_profiles["Avg Rating"] = loyalty_profiles["Avg Rating"].round(2)
     loyalty_profiles["Avg Spend (AUD)"] = loyalty_profiles["Avg Spend (AUD)"].round(2)
-    st.dataframe(loyalty_profiles, width="stretch", hide_index=True)
+    st.dataframe(loyalty_profiles, use_container_width=True, hide_index=True)
 
-    st.subheader("Loyalty Tier × Product Mix")
     loyalty_product = (
         df.groupby(["Loyalty Tier", "Item Purchased"], observed=True)
         .size()
@@ -770,8 +775,8 @@ with tabs[5]:
         color="Item Purchased",
         barmode="group",
         color_discrete_sequence=PLOTLY_COLORS,
-        template=PLOTLY_TEMPLATE,
         category_orders={"Loyalty Tier": LOYALTY_LABELS, "Item Purchased": PRODUCT_ORDER},
     )
+    dark_layout(fig, "Loyalty Tier × Product Mix", "Do loyal customers prefer different products?")
     fig.update_layout(xaxis_title="Loyalty Tier", legend_title="Product")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
