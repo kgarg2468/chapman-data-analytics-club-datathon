@@ -102,7 +102,7 @@ with tabs[0]:
             text_auto="$.2s",
         )
         fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Revenue (AUD)")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         fig = px.histogram(
@@ -114,7 +114,7 @@ with tabs[0]:
             title="Rating Distribution",
         )
         fig.update_layout(xaxis_title="Review Rating", yaxis_title="Count")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     col3, col4 = st.columns(2)
 
@@ -130,7 +130,7 @@ with tabs[0]:
             title="Gender Split",
             hole=0.4,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col4:
         fig = px.histogram(
@@ -142,7 +142,7 @@ with tabs[0]:
             title="Age Distribution",
         )
         fig.update_layout(xaxis_title="Age", yaxis_title="Count")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -173,7 +173,7 @@ with tabs[1]:
             opacity=0.6,
         )
         fig.update_layout(legend_title="Segment")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         seg_counts = df_clustered["Segment"].value_counts().reset_index()
@@ -187,7 +187,7 @@ with tabs[1]:
             title="Segment Sizes",
             hole=0.35,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Segment Profiles")
     display_profiles = profiles[
@@ -201,7 +201,7 @@ with tabs[1]:
     display_profiles["Avg Spend (AUD)"] = display_profiles["Avg Spend (AUD)"].round(2)
     display_profiles["Avg Prev Purchases"] = display_profiles["Avg Prev Purchases"].round(1)
     display_profiles["Avg Rating"] = display_profiles["Avg Rating"].round(2)
-    st.dataframe(display_profiles, use_container_width=True, hide_index=True)
+    st.dataframe(display_profiles, width="stretch", hide_index=True)
 
     fig2 = px.scatter(
         df_clustered,
@@ -214,7 +214,7 @@ with tabs[1]:
         title="Segments: Rating vs. Spend",
         opacity=0.5,
     )
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -245,7 +245,7 @@ with tabs[2]:
         )
         fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Avg Rating")
         fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         rating_by_flavour = (
@@ -266,7 +266,7 @@ with tabs[2]:
         )
         fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Avg Rating")
         fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Rating Heatmap: Product × Flavour")
     heatmap_data = df.pivot_table(
@@ -286,7 +286,7 @@ with tabs[2]:
         aspect="auto",
     )
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Product")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     col3, col4 = st.columns(2)
 
@@ -307,7 +307,7 @@ with tabs[2]:
             title="Avg Rating by Age Group",
         )
         fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col4:
         rating_by_gender = (
@@ -325,7 +325,7 @@ with tabs[2]:
         )
         fig.update_layout(showlegend=False)
         fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Avg Rating by Payment Method")
     rating_by_payment = (
@@ -341,7 +341,7 @@ with tabs[2]:
         text_auto=".2f",
     )
     fig.update_xaxes(range=[0, 5])
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Best & Worst Product-Flavour Combos")
     combo_ratings = (
@@ -357,12 +357,12 @@ with tabs[2]:
         st.markdown("**🏆 Top 5 Combos**")
         top5 = combo_ratings.nlargest(5, "Avg Rating").reset_index(drop=True)
         top5["Avg Rating"] = top5["Avg Rating"].round(2)
-        st.dataframe(top5, use_container_width=True, hide_index=True)
+        st.dataframe(top5, width="stretch", hide_index=True)
     with c2:
         st.markdown("**⚠️ Bottom 5 Combos**")
         bottom5 = combo_ratings.nsmallest(5, "Avg Rating").reset_index(drop=True)
         bottom5["Avg Rating"] = bottom5["Avg Rating"].round(2)
-        st.dataframe(bottom5, use_container_width=True, hide_index=True)
+        st.dataframe(bottom5, width="stretch", hide_index=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -390,7 +390,7 @@ with tabs[3]:
             title="Revenue Share by Product",
             hole=0.4,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         unit_sales = (
@@ -411,7 +411,7 @@ with tabs[3]:
             text_auto=True,
         )
         fig.update_layout(showlegend=False, xaxis_title="")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Flavour Popularity by Product")
     flavour_product = (
@@ -431,7 +431,7 @@ with tabs[3]:
         category_orders={"Item Purchased": PRODUCT_ORDER, "Flavour": FLAVOUR_ORDER},
     )
     fig.update_layout(xaxis_title="")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Volume vs Revenue: Price Tier Analysis")
     tier_data = (
@@ -458,7 +458,7 @@ with tabs[3]:
         yaxis_title="Percentage (%)", xaxis_title="",
         title="Volume Share vs Revenue Share",
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Product × Flavour Order Count")
     cross_tab = df.pivot_table(
@@ -474,7 +474,7 @@ with tabs[3]:
         aspect="auto",
     )
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Product")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -505,7 +505,7 @@ with tabs[4]:
             text_auto=True,
         )
         fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         gender_age = (
@@ -524,7 +524,7 @@ with tabs[4]:
             title="Gender × Age Group",
             category_orders={"Age Group": AGE_LABELS},
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Product Preference by Age Group")
     prod_age = (
@@ -543,12 +543,12 @@ with tabs[4]:
         category_orders={"Age Group": AGE_LABELS, "Item Purchased": PRODUCT_ORDER},
     )
     fig.update_layout(xaxis_title="Age Group", legend_title="Product")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Flavour Preference by Age Group")
     flav_age = df.pivot_table(
         values="Customer ID", index="Age Group", columns="Flavour",
-        aggfunc="count",
+        aggfunc="count", observed=False,
     ).reindex(index=AGE_LABELS, columns=FLAVOUR_ORDER).fillna(0)
 
     fig = px.imshow(
@@ -560,7 +560,7 @@ with tabs[4]:
         aspect="auto",
     )
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Age Group")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Gender Comparison")
     gender_stats = (
@@ -577,7 +577,7 @@ with tabs[4]:
     gender_stats["Avg Spend (AUD)"] = gender_stats["Avg Spend (AUD)"].round(2)
     gender_stats["Avg Rating"] = gender_stats["Avg Rating"].round(2)
     gender_stats["Avg Prev Purchases"] = gender_stats["Avg Prev Purchases"].round(1)
-    st.dataframe(gender_stats, use_container_width=True, hide_index=True)
+    st.dataframe(gender_stats, width="stretch", hide_index=True)
 
     col3, col4 = st.columns(2)
 
@@ -597,7 +597,7 @@ with tabs[4]:
             category_orders={"Item Purchased": PRODUCT_ORDER},
         )
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col4:
         gender_flavour = (
@@ -615,7 +615,7 @@ with tabs[4]:
             category_orders={"Flavour": FLAVOUR_ORDER},
         )
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -639,7 +639,7 @@ with tabs[5]:
             title="Payment Method Distribution",
             hole=0.35,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         pay_age = (
@@ -658,7 +658,7 @@ with tabs[5]:
             title="Payment Method by Age Group",
             category_orders={"Age Group": AGE_LABELS},
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     col3, col4 = st.columns(2)
 
@@ -677,7 +677,7 @@ with tabs[5]:
             title="Payment Method by Gender",
         )
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col4:
         fig = px.histogram(
@@ -689,7 +689,7 @@ with tabs[5]:
             title="Purchase History Distribution",
         )
         fig.update_layout(xaxis_title="Previous Purchases", yaxis_title="Count")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     st.subheader("Loyalty vs Satisfaction")
     fig = px.scatter(
@@ -705,7 +705,7 @@ with tabs[5]:
         trendline="lowess",
     )
     fig.update_layout(legend_title="Product")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
 
     st.subheader("Loyalty Tier Profiles")
     loyalty_profiles = (
@@ -725,7 +725,7 @@ with tabs[5]:
     ]
     loyalty_profiles["Avg Rating"] = loyalty_profiles["Avg Rating"].round(2)
     loyalty_profiles["Avg Spend (AUD)"] = loyalty_profiles["Avg Spend (AUD)"].round(2)
-    st.dataframe(loyalty_profiles, use_container_width=True, hide_index=True)
+    st.dataframe(loyalty_profiles, width="stretch", hide_index=True)
 
     st.subheader("Loyalty Tier × Product Mix")
     loyalty_product = (
@@ -744,4 +744,4 @@ with tabs[5]:
         category_orders={"Loyalty Tier": LOYALTY_LABELS, "Item Purchased": PRODUCT_ORDER},
     )
     fig.update_layout(xaxis_title="Loyalty Tier", legend_title="Product")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
