@@ -180,29 +180,36 @@ with tabs[1]:
             x="Age",
             y="Previous Purchases",
             color="Segment",
-            size="Purchase Amount (AUD)",
-            hover_data=["Review Rating", "Item Purchased", "Flavour"],
+            hover_data=["Review Rating", "Item Purchased", "Flavour", "Purchase Amount (AUD)"],
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Customer Segments: Age vs. Purchase History",
-            opacity=0.6,
+            opacity=0.45,
+            marginal_x="box",
+            marginal_y="box",
         )
+        fig.update_traces(marker=dict(size=5, line=dict(width=0)), selector=dict(mode="markers"))
+        dark_layout(fig, "Customer Segments: Age vs. Purchase History",
+                    "Each dot is a customer; boxes show distributions per segment", height=500)
         fig.update_layout(legend_title="Segment")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         seg_counts = df_clustered["Segment"].value_counts().reset_index()
         seg_counts.columns = ["Segment", "Count"]
+        seg_counts["Pct"] = (seg_counts["Count"] / seg_counts["Count"].sum() * 100).round(1)
         fig = px.pie(
             seg_counts,
             values="Count",
             names="Segment",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Segment Sizes",
-            hole=0.35,
+            hole=0.4,
         )
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(
+            textinfo="label+percent",
+            textfont_size=11,
+            marker=dict(line=dict(color="rgba(0,0,0,0.3)", width=1)),
+        )
+        dark_layout(fig, "Segment Sizes", height=500)
+        st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Segment Profiles")
     display_profiles = profiles[
@@ -216,7 +223,7 @@ with tabs[1]:
     display_profiles["Avg Spend (AUD)"] = display_profiles["Avg Spend (AUD)"].round(2)
     display_profiles["Avg Prev Purchases"] = display_profiles["Avg Prev Purchases"].round(1)
     display_profiles["Avg Rating"] = display_profiles["Avg Rating"].round(2)
-    st.dataframe(display_profiles, width="stretch", hide_index=True)
+    st.dataframe(display_profiles, use_container_width=True, hide_index=True)
 
     fig2 = px.scatter(
         df_clustered,
@@ -225,11 +232,14 @@ with tabs[1]:
         color="Segment",
         hover_data=["Age", "Previous Purchases"],
         color_discrete_sequence=PLOTLY_COLORS,
-        template=PLOTLY_TEMPLATE,
-        title="Segments: Rating vs. Spend",
-        opacity=0.5,
+        opacity=0.35,
+        marginal_x="violin",
+        marginal_y="violin",
     )
-    st.plotly_chart(fig2, width="stretch")
+    fig2.update_traces(marker=dict(size=4, line=dict(width=0)), selector=dict(mode="markers"))
+    dark_layout(fig2, "Segments: Rating vs. Spend",
+                "Violin plots on margins show density — look for clusters")
+    st.plotly_chart(fig2, use_container_width=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
