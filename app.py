@@ -416,11 +416,15 @@ with tabs[3]:
             values="Revenue",
             names="Item Purchased",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Revenue Share by Product",
-            hole=0.4,
+            hole=0.45,
         )
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(
+            textinfo="label+percent",
+            textfont_size=12,
+            marker=dict(line=dict(color="rgba(0,0,0,0.3)", width=1)),
+        )
+        dark_layout(fig, "Revenue Share by Product", "Each product's contribution to total revenue")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         unit_sales = (
@@ -430,20 +434,21 @@ with tabs[3]:
             .reset_index()
         )
         unit_sales.columns = ["Product", "Units"]
+        unit_sales = unit_sales.sort_values("Units", ascending=True)
         fig = px.bar(
             unit_sales,
-            x="Product",
-            y="Units",
+            y="Product",
+            x="Units",
             color="Product",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Unit Sales by Product",
-            text_auto=True,
+            orientation="h",
+            text=unit_sales["Units"].apply(lambda v: f"{v:,}"),
         )
-        fig.update_layout(showlegend=False, xaxis_title="")
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(textposition="outside", textfont_size=12)
+        dark_layout(fig, "Unit Sales by Product", "Sorted by volume")
+        fig.update_layout(showlegend=False, yaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Flavour Popularity by Product")
     flavour_product = (
         df.groupby(["Item Purchased", "Flavour"])
         .size()
@@ -456,14 +461,12 @@ with tabs[3]:
         color="Flavour",
         barmode="group",
         color_discrete_sequence=PLOTLY_COLORS,
-        template=PLOTLY_TEMPLATE,
-        title="Flavour Distribution per Product",
         category_orders={"Item Purchased": PRODUCT_ORDER, "Flavour": FLAVOUR_ORDER},
     )
+    dark_layout(fig, "Flavour Popularity by Product", "Grouped bars — compare flavour mix within each product")
     fig.update_layout(xaxis_title="")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Volume vs Revenue: Price Tier Analysis")
     tier_data = (
         df.groupby("Item Purchased")
         .agg(units=("Customer ID", "count"), revenue=("Revenue", "sum"))
@@ -478,19 +481,18 @@ with tabs[3]:
     fig.add_trace(go.Bar(
         x=tier_data["Item Purchased"], y=tier_data["Volume %"],
         name="Volume %", marker_color=COLORS["primary"],
+        text=tier_data["Volume %"].apply(lambda v: f"{v:.1f}%"), textposition="outside",
     ))
     fig.add_trace(go.Bar(
         x=tier_data["Item Purchased"], y=tier_data["Revenue %"],
         name="Revenue %", marker_color=COLORS["accent"],
+        text=tier_data["Revenue %"].apply(lambda v: f"{v:.1f}%"), textposition="outside",
     ))
-    fig.update_layout(
-        barmode="group", template=PLOTLY_TEMPLATE,
-        yaxis_title="Percentage (%)", xaxis_title="",
-        title="Volume Share vs Revenue Share",
-    )
-    st.plotly_chart(fig, width="stretch")
+    fig.update_layout(barmode="group")
+    dark_layout(fig, "Volume Share vs Revenue Share", "When revenue % > volume %, the product has a higher avg price")
+    fig.update_layout(yaxis_title="Percentage (%)", xaxis_title="")
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Product × Flavour Order Count")
     cross_tab = df.pivot_table(
         values="Customer ID", index="Item Purchased", columns="Flavour",
         aggfunc="count",
@@ -500,11 +502,12 @@ with tabs[3]:
         cross_tab,
         text_auto=True,
         color_continuous_scale="Blues",
-        template=PLOTLY_TEMPLATE,
         aspect="auto",
     )
+    dark_layout(fig, "Product × Flavour Order Count", "Darker = more orders for that combination")
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Product")
-    st.plotly_chart(fig, width="stretch")
+    fig.update_traces(textfont_size=13)
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
