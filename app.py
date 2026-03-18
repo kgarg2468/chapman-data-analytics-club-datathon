@@ -527,18 +527,19 @@ with tabs[4]:
             .reset_index()
         )
         age_dist.columns = ["Age Group", "Count"]
+        age_dist["Pct"] = (age_dist["Count"] / age_dist["Count"].sum() * 100).round(1)
         fig = px.bar(
             age_dist,
             x="Age Group",
             y="Count",
             color="Age Group",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Orders by Age Group",
-            text_auto=True,
+            text=age_dist.apply(lambda r: f"{r['Count']:,} ({r['Pct']}%)", axis=1),
         )
-        fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(textposition="outside", textfont_size=11)
+        dark_layout(fig, "Orders by Age Group", "Count and percentage of total orders")
+        fig.update_layout(showlegend=False, xaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         gender_age = (
@@ -552,14 +553,13 @@ with tabs[4]:
             y="Count",
             color="Gender",
             barmode="group",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Gender × Age Group",
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
             category_orders={"Age Group": AGE_LABELS},
         )
-        st.plotly_chart(fig, width="stretch")
+        dark_layout(fig, "Gender × Age Group", "Male vs Female order volume by age bracket")
+        fig.update_layout(xaxis_title="")
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Product Preference by Age Group")
     prod_age = (
         df.groupby(["Age Group", "Item Purchased"], observed=True)
         .size()
@@ -572,13 +572,12 @@ with tabs[4]:
         color="Item Purchased",
         barmode="stack",
         color_discrete_sequence=PLOTLY_COLORS,
-        template=PLOTLY_TEMPLATE,
         category_orders={"Age Group": AGE_LABELS, "Item Purchased": PRODUCT_ORDER},
     )
+    dark_layout(fig, "Product Preference by Age Group", "Stacked bars — each color is a product")
     fig.update_layout(xaxis_title="Age Group", legend_title="Product")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Flavour Preference by Age Group")
     flav_age = df.pivot_table(
         values="Customer ID", index="Age Group", columns="Flavour",
         aggfunc="count", observed=False,
@@ -588,12 +587,12 @@ with tabs[4]:
         flav_age,
         text_auto=True,
         color_continuous_scale="YlOrRd",
-        template=PLOTLY_TEMPLATE,
-        title="Flavour × Age Group Heatmap",
         aspect="auto",
     )
+    dark_layout(fig, "Flavour × Age Group Heatmap", "Warmer colors = more orders")
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Age Group")
-    st.plotly_chart(fig, width="stretch")
+    fig.update_traces(textfont_size=13)
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Gender Comparison")
     gender_stats = (
@@ -610,7 +609,7 @@ with tabs[4]:
     gender_stats["Avg Spend (AUD)"] = gender_stats["Avg Spend (AUD)"].round(2)
     gender_stats["Avg Rating"] = gender_stats["Avg Rating"].round(2)
     gender_stats["Avg Prev Purchases"] = gender_stats["Avg Prev Purchases"].round(1)
-    st.dataframe(gender_stats, width="stretch", hide_index=True)
+    st.dataframe(gender_stats, use_container_width=True, hide_index=True)
 
     col3, col4 = st.columns(2)
 
@@ -624,13 +623,12 @@ with tabs[4]:
             y="Count",
             color="Gender",
             barmode="group",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Product Preference by Gender",
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
             category_orders={"Item Purchased": PRODUCT_ORDER},
         )
+        dark_layout(fig, "Product Preference by Gender")
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
     with col4:
         gender_flavour = (
@@ -642,13 +640,12 @@ with tabs[4]:
             y="Count",
             color="Gender",
             barmode="group",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Flavour Preference by Gender",
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
             category_orders={"Flavour": FLAVOUR_ORDER},
         )
+        dark_layout(fig, "Flavour Preference by Gender")
         fig.update_layout(xaxis_title="")
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
