@@ -19,6 +19,7 @@ from utils import (
     LOYALTY_LABELS,
     COLORS,
 )
+from chat import get_chat_response
 
 st.set_page_config(
     page_title="Energy Drink Analytics",
@@ -29,12 +30,15 @@ st.set_page_config(
 
 PLOTLY_COLORS = COLORS["palette"]
 
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 
 # ── Sidebar ──────────────────────────────────────────────────────────────────
 
 df_raw = load_data()
 
-st.sidebar.title("⚡ Filters")
+st.sidebar.title("Filters")
 
 gender = st.sidebar.radio("Gender", ["All", "Male", "Female"], horizontal=True)
 
@@ -56,17 +60,91 @@ if df.empty:
 st.sidebar.markdown("---")
 st.sidebar.caption(f"Showing **{len(df):,}** of {len(df_raw):,} orders")
 
+# ── Chat Settings (sidebar) ─────────────────────────────────────────────────
 
-# ── Tabs ─────────────────────────────────────────────────────────────────────
+st.sidebar.markdown("---")
+st.sidebar.subheader("AI Chat")
 
-tabs = st.tabs([
-    "📊 Executive Summary",
-    "🎯 Customer Segmentation",
-    "⭐ Satisfaction Drivers",
-    "📦 Product Mix & Revenue",
-    "👥 Demographic Patterns",
-    "💳 Payment & Loyalty",
-])
+api_key = st.sidebar.text_input("OpenAI API Key", type="password", key="openai_key")
+chat_model = st.sidebar.selectbox(
+    "Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"], index=0
+)
+chat_width = st.sidebar.select_slider(
+    "Chat panel width",
+    options=["Hidden", "Narrow", "Medium", "Wide"],
+    value="Medium",
+)
+
+CHAT_WIDTH_MAP = {"Hidden": 0, "Narrow": 1, "Medium": 2, "Wide": 3}
+chat_col_size = CHAT_WIDTH_MAP[chat_width]
+
+if st.sidebar.button("Clear chat history"):
+    st.session_state.chat_history = []
+    st.rerun()
+
+
+# ── Main Layout ──────────────────────────────────────────────────────────────
+
+if chat_col_size > 0 and api_key:
+    chat_col, main_col = st.columns([chat_col_size, 5])
+else:
+    chat_col = None
+    main_col = st.container()
+
+# ── Chat Panel ───────────────────────────────────────────────────────────────
+
+if chat_col is not None:
+    with chat_col:
+        st.markdown("#### Ask the Data")
+
+        chat_container = st.container(height=600)
+        with chat_container:
+            if not st.session_state.chat_history:
+                st.caption("Ask any question about the energy drink orders data. "
+                           "I can run calculations, find patterns, and explain trends.")
+
+            for msg in st.session_state.chat_history:
+                with st.chat_message(msg["role"]):
+                    st.markdown(msg["content"])
+
+        user_input = st.chat_input("Ask a question...", key="chat_input")
+
+        if user_input:
+            st.session_state.chat_history.append({"role": "user", "content": user_input})
+
+            with chat_container:
+                with st.chat_message("user"):
+                    st.markdown(user_input)
+                with st.chat_message("assistant"):
+                    with st.spinner("Thinking..."):
+                        try:
+                            response = get_chat_response(
+                                st.session_state.chat_history,
+                                df,
+                                api_key,
+                                model=chat_model,
+                            )
+                        except Exception as e:
+                            response = f"Error: {e}"
+                    st.markdown(response)
+
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
+            st.rerun()
+
+elif chat_col_size > 0 and not api_key:
+    pass
+
+# ── Dashboard Content ────────────────────────────────────────────────────────
+
+with main_col:
+    tabs = st.tabs([
+        "Executive Summary",
+        "Customer Segmentation",
+        "Satisfaction Drivers",
+        "Product Mix & Revenue",
+        "Demographic Patterns",
+        "Payment & Loyalty",
+    ])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
