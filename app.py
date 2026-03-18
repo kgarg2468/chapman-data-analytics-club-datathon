@@ -65,7 +65,13 @@ st.sidebar.caption(f"Showing **{len(df):,}** of {len(df_raw):,} orders")
 st.sidebar.markdown("---")
 st.sidebar.subheader("AI Chat")
 
-api_key = st.sidebar.text_input("OpenAI API Key", type="password", key="openai_key")
+secrets_key = st.secrets.get("OPENAI_API_KEY", "") if hasattr(st, "secrets") else ""
+api_key = st.sidebar.text_input(
+    "OpenAI API Key",
+    value=secrets_key if secrets_key and secrets_key != "paste-your-key-here" else "",
+    type="password",
+    key="openai_key",
+)
 chat_model = st.sidebar.selectbox(
     "Model", ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"], index=0
 )
