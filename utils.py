@@ -22,16 +22,21 @@ PRODUCT_ORDER = [
 FLAVOUR_ORDER = ["Berry", "Blue Bolt", "Grape", "Lemon-Lime", "Orange", "Tropical"]
 
 COLORS = {
-    "primary": "#0068C9",
-    "secondary": "#83C9FF",
-    "accent": "#FF4B4B",
-    "success": "#21C354",
-    "warning": "#FACA2B",
-    "neutral": "#808495",
+    "primary": "#4FC3F7",
+    "secondary": "#81D4FA",
+    "accent": "#FF7043",
+    "success": "#66BB6A",
+    "warning": "#FFD54F",
+    "neutral": "#B0BEC5",
     "palette": [
-        "#0068C9", "#83C9FF", "#FF4B4B", "#21C354",
-        "#FACA2B", "#FF8C00", "#A855F7", "#808495",
+        "#4FC3F7", "#FF7043", "#66BB6A", "#FFD54F",
+        "#AB47BC", "#26A69A", "#EF5350", "#78909C",
     ],
+    "muted_blue": "#5C6BC0",
+    "muted_pink": "#EC407A",
+    "grid": "rgba(255,255,255,0.08)",
+    "text": "#E0E0E0",
+    "text_secondary": "#9E9E9E",
 }
 
 
@@ -127,6 +132,74 @@ def _generate_cluster_labels(profiles: pd.DataFrame) -> dict[int, str]:
         labels[cid] = name
 
     return labels
+
+
+def dark_layout(fig, title: str = "", subtitle: str = "", height: int | None = None):
+    """Apply a consistent dark theme to any Plotly figure."""
+    layout_args = dict(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, system-ui, sans-serif", color=COLORS["text"], size=13),
+        title=dict(
+            text=f"<b>{title}</b>" + (f"<br><span style='font-size:12px;color:{COLORS['text_secondary']}'>{subtitle}</span>" if subtitle else ""),
+            font=dict(size=17),
+            x=0.0,
+            xanchor="left",
+        ) if title else None,
+        margin=dict(l=50, r=20, t=70 if title else 30, b=50),
+        xaxis=dict(gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"]),
+        yaxis=dict(gridcolor=COLORS["grid"], zerolinecolor=COLORS["grid"]),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=11),
+        ),
+    )
+    if height:
+        layout_args["height"] = height
+    fig.update_layout(**{k: v for k, v in layout_args.items() if v is not None})
+    return fig
+
+
+def add_mean_line(fig, values, axis="x", name="Mean", color=None):
+    """Add a dashed mean reference line to a figure."""
+    mean_val = values.mean()
+    line_color = color or COLORS["accent"]
+    if axis == "x":
+        fig.add_vline(
+            x=mean_val, line_dash="dash", line_color=line_color, line_width=2,
+            annotation_text=f"{name}: {mean_val:.1f}",
+            annotation_font=dict(color=line_color, size=12),
+            annotation_position="top",
+        )
+    else:
+        fig.add_hline(
+            y=mean_val, line_dash="dash", line_color=line_color, line_width=2,
+            annotation_text=f"{name}: {mean_val:.1f}",
+            annotation_font=dict(color=line_color, size=12),
+        )
+    return fig
+
+
+def get_data_summary(df: pd.DataFrame) -> str:
+    """Generate a text summary of the dataset for LLM context."""
+    lines = [
+        f"Dataset: Online Energy Drink Orders ({len(df):,} rows after filters)",
+        f"Columns: {', '.join(df.columns)}",
+        "",
+        "Numerical summaries:",
+        f"  Age: {df['Age'].min()}-{df['Age'].max()}, mean={df['Age'].mean():.1f}",
+        f"  Purchase Amount (AUD): ${df['Purchase Amount (AUD)'].min():.2f}-${df['Purchase Amount (AUD)'].max():.2f}, mean=${df['Purchase Amount (AUD)'].mean():.2f}",
+        f"  Review Rating: {df['Review Rating'].min():.1f}-{df['Review Rating'].max():.1f}, mean={df['Review Rating'].mean():.2f}",
+        f"  Previous Purchases: {df['Previous Purchases'].min()}-{df['Previous Purchases'].max()}, mean={df['Previous Purchases'].mean():.1f}",
+        "",
+        "Categorical values:",
+        f"  Gender: {', '.join(df['Gender'].unique())}",
+        f"  Items: {', '.join(sorted(df['Item Purchased'].unique()))}",
+        f"  Flavours: {', '.join(sorted(df['Flavour'].unique()))}",
+        f"  Payment Methods: {', '.join(sorted(df['Payment Method'].unique()))}",
+    ]
+    return "\n".join(lines)
 
 
 def format_currency(val: float) -> str:

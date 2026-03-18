@@ -10,6 +10,9 @@ from utils import (
     run_clustering,
     format_currency,
     format_pct,
+    dark_layout,
+    add_mean_line,
+    get_data_summary,
     PRODUCT_ORDER,
     FLAVOUR_ORDER,
     AGE_LABELS,
@@ -24,7 +27,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-PLOTLY_TEMPLATE = "plotly_white"
 PLOTLY_COLORS = COLORS["palette"]
 
 
