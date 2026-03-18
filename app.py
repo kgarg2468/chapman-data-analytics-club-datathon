@@ -258,19 +258,21 @@ with tabs[2]:
             .reindex(PRODUCT_ORDER)
             .reset_index()
         )
+        rating_by_product = rating_by_product.sort_values("Review Rating", ascending=True)
         fig = px.bar(
             rating_by_product,
-            x="Item Purchased",
-            y="Review Rating",
+            y="Item Purchased",
+            x="Review Rating",
             color="Item Purchased",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Avg Rating by Product",
-            text_auto=".2f",
+            orientation="h",
+            text=rating_by_product["Review Rating"].apply(lambda v: f"{v:.2f}"),
         )
-        fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Avg Rating")
-        fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(textposition="outside", textfont_size=12)
+        dark_layout(fig, "Avg Rating by Product", "All products rate similarly (~3.5)")
+        fig.update_layout(showlegend=False, yaxis_title="", xaxis_title="Avg Rating")
+        fig.update_xaxes(range=[0, 5])
+        st.plotly_chart(fig, use_container_width=True)
 
     with col2:
         rating_by_flavour = (
@@ -279,19 +281,21 @@ with tabs[2]:
             .reindex(FLAVOUR_ORDER)
             .reset_index()
         )
+        rating_by_flavour = rating_by_flavour.sort_values("Review Rating", ascending=True)
         fig = px.bar(
             rating_by_flavour,
-            x="Flavour",
-            y="Review Rating",
+            y="Flavour",
+            x="Review Rating",
             color="Flavour",
             color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Avg Rating by Flavour",
-            text_auto=".2f",
+            orientation="h",
+            text=rating_by_flavour["Review Rating"].apply(lambda v: f"{v:.2f}"),
         )
-        fig.update_layout(showlegend=False, xaxis_title="", yaxis_title="Avg Rating")
-        fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(textposition="outside", textfont_size=12)
+        dark_layout(fig, "Avg Rating by Flavour", "Minimal variation across flavours")
+        fig.update_layout(showlegend=False, yaxis_title="", xaxis_title="Avg Rating")
+        fig.update_xaxes(range=[0, 5])
+        st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Rating Heatmap: Product × Flavour")
     heatmap_data = df.pivot_table(
@@ -306,12 +310,12 @@ with tabs[2]:
         heatmap_data,
         text_auto=".2f",
         color_continuous_scale="RdYlGn",
-        template=PLOTLY_TEMPLATE,
-        title="Avg Rating: Product × Flavour",
         aspect="auto",
     )
+    dark_layout(fig, "Avg Rating: Product × Flavour", "Green = higher rated combos, Red = lower")
     fig.update_layout(xaxis_title="Flavour", yaxis_title="Product")
-    st.plotly_chart(fig, width="stretch")
+    fig.update_traces(textfont_size=13)
+    st.plotly_chart(fig, use_container_width=True)
 
     col3, col4 = st.columns(2)
 
@@ -328,11 +332,11 @@ with tabs[2]:
             y="Review Rating",
             markers=True,
             color_discrete_sequence=[COLORS["primary"]],
-            template=PLOTLY_TEMPLATE,
-            title="Avg Rating by Age Group",
         )
-        fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, width="stretch")
+        fig.update_traces(line=dict(width=3), marker=dict(size=10))
+        dark_layout(fig, "Avg Rating by Age Group", "Flat trend — age doesn't drive satisfaction")
+        fig.update_yaxes(range=[2.5, 5])
+        st.plotly_chart(fig, use_container_width=True)
 
     with col4:
         rating_by_gender = (
@@ -343,16 +347,15 @@ with tabs[2]:
             x="Gender",
             y="Review Rating",
             color="Gender",
-            color_discrete_sequence=PLOTLY_COLORS,
-            template=PLOTLY_TEMPLATE,
-            title="Avg Rating by Gender",
-            text_auto=".2f",
+            color_discrete_sequence=[COLORS["primary"], COLORS["accent"]],
+            text=rating_by_gender["Review Rating"].apply(lambda v: f"{v:.2f}"),
         )
+        fig.update_traces(textposition="outside", textfont_size=13)
+        dark_layout(fig, "Avg Rating by Gender", "No significant gender difference")
         fig.update_layout(showlegend=False)
         fig.update_yaxes(range=[0, 5])
-        st.plotly_chart(fig, width="stretch")
+        st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("Avg Rating by Payment Method")
     rating_by_payment = (
         df.groupby("Payment Method")["Review Rating"].mean().sort_values().reset_index()
     )
@@ -361,12 +364,14 @@ with tabs[2]:
         x="Review Rating",
         y="Payment Method",
         orientation="h",
-        color_discrete_sequence=[COLORS["accent"]],
-        template=PLOTLY_TEMPLATE,
-        text_auto=".2f",
+        color_discrete_sequence=[COLORS["muted_blue"]],
+        text=rating_by_payment["Review Rating"].apply(lambda v: f"{v:.2f}"),
     )
+    fig.update_traces(textposition="outside", textfont_size=12)
+    dark_layout(fig, "Avg Rating by Payment Method", "Sorted lowest to highest")
     fig.update_xaxes(range=[0, 5])
-    st.plotly_chart(fig, width="stretch")
+    fig.update_layout(yaxis_title="")
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Best & Worst Product-Flavour Combos")
     combo_ratings = (
@@ -379,15 +384,15 @@ with tabs[2]:
 
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("**🏆 Top 5 Combos**")
+        st.markdown("**Top 5 Combos**")
         top5 = combo_ratings.nlargest(5, "Avg Rating").reset_index(drop=True)
         top5["Avg Rating"] = top5["Avg Rating"].round(2)
-        st.dataframe(top5, width="stretch", hide_index=True)
+        st.dataframe(top5, use_container_width=True, hide_index=True)
     with c2:
-        st.markdown("**⚠️ Bottom 5 Combos**")
+        st.markdown("**Bottom 5 Combos**")
         bottom5 = combo_ratings.nsmallest(5, "Avg Rating").reset_index(drop=True)
         bottom5["Avg Rating"] = bottom5["Avg Rating"].round(2)
-        st.dataframe(bottom5, width="stretch", hide_index=True)
+        st.dataframe(bottom5, use_container_width=True, hide_index=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
